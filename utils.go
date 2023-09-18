@@ -29,3 +29,7 @@ func printEvent(args ...string) {
 	magenta := color.New(color.FgMagenta).SprintFunc()
 	log.Println(magenta("event"), strings.Join(args, " "))
 }
+
+func isLeaf(n MerkleNode) bool {
+	return n.left == nil && n.right == nil
+}

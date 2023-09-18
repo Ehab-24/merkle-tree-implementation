@@ -71,7 +71,7 @@ func printTreeRec(n *MerkleNode, level int) {
 
 	str := n.hash
 	if n.content != "" {
-		str = n.hash + fmt.Sprintf(" (%s)", n.content)
+		str = n.hash + fmt.Sprintf(" (Leaf)")
 	}
 
 	cyan := color.New(color.FgCyan).SprintFunc()
@@ -82,7 +82,38 @@ func printTreeRec(n *MerkleNode, level int) {
 }
 
 func (t *MerkleTree) Print() {
+	printEvent("\nMerkle Tree")
 	printTreeRec(&t.root, 0)
+}
+
+func printLeaves(n *MerkleNode) {
+	if isLeaf(*n) {
+		log.Println(n.hash)
+		return
+	}
+	printLeaves(n.left)
+	printLeaves(n.right)
+}
+
+func findDFS(n *MerkleNode, predicate func(n *MerkleNode) bool) *MerkleNode {
+	if n == nil {
+		return nil
+	}
+	if predicate(n) {
+		return n
+	}
+
+	left := findDFS(n.left, predicate)
+	right := findDFS(n.right, predicate)
+
+	if left != nil {
+		return left
+	}
+	return right
+}
+
+func (t *MerkleTree) RootHash() string {
+	return t.root.hash
 }
 
 /************************************************
@@ -108,31 +139,10 @@ func (t *MerkleTree) ProveMembership(elems []ProofElement) *MerkleNode {
 	return &currentNode
 }
 
-func findDFS(n *MerkleNode, predicate func(n *MerkleNode) bool) *MerkleNode {
-	if n == nil {
-		return nil
-	}
-	if predicate(n) {
-		return n
-	}
-
-	left := findDFS(n.left, predicate)
-	right := findDFS(n.right, predicate)
-
-	if left != nil {
-		return left
-	}
-	return right
-}
-
 func (t *MerkleTree) ProveNonMembership(hash string) bool {
 	n := findDFS(&t.root, func(n *MerkleNode) bool {
 		return isLeaf((*n)) && (*n).hash == hash
 	})
 
 	return n == nil
-}
-
-func (t *MerkleTree) RootHash() string {
-	return t.root.hash
 }

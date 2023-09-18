@@ -10,8 +10,16 @@ import (
 const filepath string = "data.txt"
 
 func main() {
-
 	log.SetFlags(0)
+
+	if len(os.Args) == 2 {
+		command := os.Args[1]
+		printEvent("writing into data.txt...")
+		execCommand(command)
+		color.Green("\nFile written successfully!")
+		log.Println("\nHint: run 'make run' to run the program")
+		return
+	}
 
 	f, err := os.Open(filepath)
 	check(err)
@@ -21,6 +29,8 @@ func main() {
 
 	printEvent("generating merkle tree...")
 	tree := NewMerkleTree(chunks)
+
+	tree.Print()
 
 	printEvent("Merkle Tree Root:", tree.RootHash())
 
@@ -36,12 +46,13 @@ func proofOfMembership(tree *MerkleTree) {
 	node := tree.ProveMembership(elems)
 	bytesToPrint := 512
 	if node != nil {
-		color.Green("\nData exists in the merkle tree! Data Head (%d/%d bytes):", bytesToPrint, 8192000)
+		color.Green("Data exists in the merkle tree! Data Head (%d/%d bytes):", bytesToPrint, 8192000)
 		log.Println(node.content[:bytesToPrint])
 	} else {
 		color.Red("\nNo such data.\n")
 	}
 }
+
 func proofOfNonMembership(tree *MerkleTree) {
 	log.Println()
 
@@ -53,7 +64,6 @@ func proofOfNonMembership(tree *MerkleTree) {
 		color.Red("\nData does exist in the merkle tree!")
 	} else {
 		color.Green("\nData does not exist!")
-
 	}
 }
 
@@ -74,4 +84,12 @@ func readFileChunks(f *os.File) []string {
 	}
 
 	return chunks
+}
+
+func execCommand(command string) {
+	if command == "create-file" {
+		file, err := os.OpenFile("data.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+		check(err)
+		writeTestFile(file)
+	}
 }

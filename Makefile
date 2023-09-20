@@ -5,3 +5,6 @@ create-file:
 run:
 	clear
 	@go run .
+
+help:
+	@go run . help

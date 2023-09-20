@@ -33,3 +33,7 @@ func printEvent(args ...string) {
 func isLeaf(n MerkleNode) bool {
 	return n.left == nil && n.right == nil
 }
+
+func printHelpManual() {
+	log.Println("Available commands:\n\t1. make create-file - create a random test file, size: 1GB\n\t2. make run -\n\t\ta) create a merkletree using 'data.txt' generated in (1)\n\t\tb) print the merkle tree (hashes only)\n\t\tc) run membership and non-membership proofs using the generated merkle tree and hardcoded hashes")
+}

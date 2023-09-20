@@ -12,12 +12,8 @@ const filepath string = "data.txt"
 func main() {
 	log.SetFlags(0)
 
-	if len(os.Args) == 2 {
-		command := os.Args[1]
-		printEvent("writing into data.txt...")
-		execCommand(command)
-		color.Green("\nFile written successfully!")
-		log.Println("\nHint: run 'make run' to run the program")
+	if len(os.Args) > 1 {
+		handleCommand(os.Args)
 		return
 	}
 
@@ -39,6 +35,19 @@ func main() {
 	proofOfNonMembership(&tree)
 }
 
+func handleCommand(args []string) {
+	command := os.Args[1]
+	if command == "create-file" {
+		printEvent("writing into data.txt...")
+		execCommand(command)
+		color.Green("\nFile written successfully!")
+		log.Println("\nHint: run 'make run' to run the program")
+
+	} else {
+		printHelpManual()
+	}
+}
+
 func proofOfMembership(tree *MerkleTree) {
 	log.Println()
 
@@ -49,21 +58,21 @@ func proofOfMembership(tree *MerkleTree) {
 		color.Green("Data exists in the merkle tree! Data Head (%d/%d bytes):", bytesToPrint, 8192000)
 		log.Println(node.content[:bytesToPrint])
 	} else {
-		color.Red("\nNo such data.\n")
+		color.Red("No such data.\n")
 	}
 }
 
 func proofOfNonMembership(tree *MerkleTree) {
 	log.Println()
 
-	hash := "z62cacfb4c1d0f852f7925c0c96ae09b0b30e1a303a07b7b8d2d642f0ba91d7c"
+	hash := "d72518be626086284a0003d7365aa035e76eb1cab7646c7a506a4143af2fe5fd"
 	printEvent("verifying non-membership of", hash)
 	exists := !tree.ProveNonMembership(hash)
 
 	if exists {
-		color.Red("\nData does exist in the merkle tree!")
+		color.Red("Data exists in the merkle tree!\n")
 	} else {
-		color.Green("\nData does not exist!")
+		color.Green("Data does not exist!\n")
 	}
 }
 

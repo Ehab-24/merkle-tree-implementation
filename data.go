@@ -88,7 +88,7 @@ func writeTestFile(file *os.File) error {
 			return err
 		}
 
-		fmt.Printf("\rchunks: %d/128", chunk+1)
+		fmt.Printf("\r%d/1024 MB", (chunk+1)*8)
 	}
 	return nil
 }

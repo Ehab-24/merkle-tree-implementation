@@ -22,12 +22,18 @@ func createMerkleRoot(nodes []MerkleNode) MerkleNode {
 	n := len(nodes)
 	if n == 2 {
 		return NewNode(hash256(nodes[0].hash+nodes[1].hash), &nodes[0], &nodes[1], "")
-
 	}
 
 	half := n / 2
 	left := createMerkleRoot(nodes[:half])
 	right := createMerkleRoot(nodes[half:])
+
+	// sort nodes in alphabetical order
+	if left.hash > right.hash {
+		temp := left
+		left = right
+		right = temp
+	}
 
 	hash := hash256(left.hash + right.hash)
 
@@ -86,38 +92,12 @@ func (t *MerkleTree) Print() {
 	printTreeRec(&t.root, 0)
 }
 
-func printLeaves(n *MerkleNode) {
-	if isLeaf(*n) {
-		log.Println(n.hash)
-		return
-	}
-	printLeaves(n.left)
-	printLeaves(n.right)
-}
-
-func findDFS(n *MerkleNode, predicate func(n *MerkleNode) bool) *MerkleNode {
-	if n == nil {
-		return nil
-	}
-	if predicate(n) {
-		return n
-	}
-
-	left := findDFS(n.left, predicate)
-	right := findDFS(n.right, predicate)
-
-	if left != nil {
-		return left
-	}
-	return right
-}
-
 func (t *MerkleTree) RootHash() string {
 	return t.root.hash
 }
 
 /************************************************
- * Membership proves
+ * Membership proofs
 ************************************************/
 
 func (t *MerkleTree) ProveMembership(elems []ProofElement) *MerkleNode {
@@ -139,10 +119,26 @@ func (t *MerkleTree) ProveMembership(elems []ProofElement) *MerkleNode {
 	return &currentNode
 }
 
-func (t *MerkleTree) ProveNonMembership(hash string) bool {
-	n := findDFS(&t.root, func(n *MerkleNode) bool {
-		return isLeaf((*n)) && (*n).hash == hash
-	})
+/*
+ * All nodes in the tree are sorted in alphabetical order meaning, for any inner node N, N.left.hash < N.right.hash
+ */
+func findNode(n *MerkleNode, targetHash string) *MerkleNode {
+	if n == nil {
+		return nil
+	}
+	if n.hash == targetHash {
+		return n
+	}
+	left := findNode(n.left, targetHash)
+	right := findNode(n.right, targetHash)
 
+	if left != nil {
+		return left
+	}
+	return right
+}
+
+func (t *MerkleTree) ProveNonMembership(hash string) bool {
+	n := findNode(&t.root, hash)
 	return n == nil
 }

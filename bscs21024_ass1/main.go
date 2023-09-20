@@ -12,12 +12,8 @@ const filepath string = "data.txt"
 func main() {
 	log.SetFlags(0)
 
-	if len(os.Args) == 2 {
-		command := os.Args[1]
-		printEvent("writing into data.txt...")
-		execCommand(command)
-		color.Green("\nFile written successfully!")
-		log.Println("\nHint: run 'make run' to run the program")
+	if len(os.Args) > 1 {
+		handleCommand(os.Args)
 		return
 	}
 
@@ -37,6 +33,19 @@ func main() {
 	proofOfMembership(&tree)
 
 	proofOfNonMembership(&tree)
+}
+
+func handleCommand(args []string) {
+	command := os.Args[1]
+	if command == "create-file" {
+		printEvent("writing into data.txt...")
+		execCommand(command)
+		color.Green("\nFile written successfully!")
+		log.Println("\nHint: run 'make run' to run the program")
+
+	} else {
+		printHelpManual()
+	}
 }
 
 func proofOfMembership(tree *MerkleTree) {
